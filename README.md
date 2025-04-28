@@ -15,3 +15,6 @@ A design based upon the Soldat Meltfire from RR6/Ferrari 360 or the old style Es
 3) Upload the dash via the uploader while connected to the GAWR Wifi.
 4) Follow the rest of the aforementioned instructions.
 
+This dash will require you to update your gear settings (under settings -> gears) for the calculated gear (unless you're very fancy and running a sequential with a canbus output), the following works decently for me currently with a stock C64 transmission:
+
+(1st) 123 (2nd) 83 (3rd) 60 (4th) 47 (5th) 37 (6th) 33
