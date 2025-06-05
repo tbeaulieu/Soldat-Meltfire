@@ -6,6 +6,8 @@
 ---
 A design based upon the Soldat Meltfire from RR6/Ferrari 360 or the old style Esprit dashboards. I've left part of the design open for your own gauge (be it AF/Intake temperature/*choose your own adventure*). Let me know if you want something here.
 
+When setting limits, think in units of celcius. I typically make 100C for coolant, and 130 C for oil temp limits. 
+
 ---
 
 # Installation notes:
