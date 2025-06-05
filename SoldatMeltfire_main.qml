@@ -787,7 +787,7 @@ FileIO {
 ////////////////////////////////////
 //////////////////////////////////
 
-Meltfire{
+SoldatMeltfire{
         id: dial
         odometer:parent.odometer/10
         tripmeter:parent.tripmeter
