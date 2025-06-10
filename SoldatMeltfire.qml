@@ -837,6 +837,12 @@ Item {
                             Rotation{
                                 origin.x: 1.5;origin.y:0
                                 angle:index*27
+                                Behavior on angle{
+                                    SpringAnimation {
+                                        spring: 1.2
+                                        damping:.16
+                                    }
+                                }
                             }
                         ]
                     }
@@ -851,7 +857,7 @@ Item {
                 Text{
                     font.family: boosted.name
                     font.pixelSize: 24
-                    text: root.oilpressure.toFixed(1)
+                    text: root.oilpressureunits === 1 ? root.oilpressure.toFixed(1):(root.oilpressure*14.5038).toFixed(0)
                     x:0; y:48; z: 10
                     color: if(root.oilpressurelow < root.oilpressure) root.primary_color; else tempWarningColor()
                     width: 100
