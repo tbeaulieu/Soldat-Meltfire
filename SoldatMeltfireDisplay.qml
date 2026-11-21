@@ -138,6 +138,9 @@ Item {
     property bool changing_page: rpmtest.changing_pagedata
 
 
+    property int oiltempshow: 1           // 0 = hide the oil temp gauge
+    property int oilpressureshow: 1       // 0 = hide the oil pressure gauge
+
     // Set by SoldatMeltfire.qml (same hooks as the AgeSolo template)
     property string settingsFocus: ""   // key of the setting being edited, "" when the menu is closed
     property string userColor: ""       // Red/Green/Blue from the settings menu
@@ -678,6 +681,7 @@ Item {
         Item{
         id: oil_temp_gauge
         x:654;y:169;z:8
+        visible: root.oiltempshow === 1
         Rectangle{
             width: 125; height:125
             radius: width*0.5
@@ -793,6 +797,7 @@ Item {
         Item{
             id:oil_pressure_gauge
             x:607;y:25;z:8
+            visible: root.oilpressureshow === 1
             
             Rectangle{
                 width:125;height:125
@@ -891,8 +896,8 @@ Item {
     readonly property int focusSpot: {
         var k = root.settingsFocus
         if (k === "waterunits" || k === "waterhigh") return 0
-        if (k === "oiltempunits" || k === "oiltemphigh") return 1
-        if (k === "oilpressureunits" || k === "oilpressurelow") return 2
+        if (k === "oiltempshow" || k === "oiltempunits" || k === "oiltemphigh") return 1
+        if (k === "oilpressureshow" || k === "oilpressureunits" || k === "oilpressurelow") return 2
         if (k === "speedunits") return 3
         if (k === "fuellow") return 4
         return -1

@@ -14,6 +14,8 @@ A design based upon the Soldat Meltfire from RR6/Ferrari 360 or the old style Es
 - `SettingsPreview.qml` - standalone menu preview, not loaded by the dash
 - `SoldatMeltfire.qml.png` - preview shown in the dash picker
 
+Oil temperature and oil pressure can each be hidden with their Show row in the settings menu.
+
 Settings are saved as JSON in `/opt/IC7/screen_configs/SoldatMeltfire_config.json`. An existing `Meltfire_config.txt` is imported once on first run.
 
 When setting limits, think in units of celcius. I typically make 100C for coolant, and 130 C for oil temp limits. 1 bar = ~14 psi. You'll see the limit marker rotate as you raise the temperature! :) 

@@ -70,6 +70,10 @@ Item{
     property int oilpressureunits:0
     property real night_time_hue:0
 
+    // Optional gauges
+    property int oiltempshow:1            // 0 = hide the oil temp gauge
+    property int oilpressureshow:1        // 0 = hide the oil pressure gauge
+
     property bool settings_on_off:false
     property bool menu_on_off:rpmtest.settings_on_offdata&0x02
 
@@ -117,7 +121,8 @@ Item{
         { key: "red" },  { key: "green" },  { key: "blue" },
         { key: "waterhigh" },      { key: "waterunits" },
         { key: "fuellow" },
-        { key: "oiltemphigh" },    { key: "oiltempunits" },
+        { key: "oiltempshow" },    { key: "oiltemphigh" },     { key: "oiltempunits" },
+        { key: "oilpressureshow" },
         { key: "oilpressurelow" }, { key: "oilpressureunits" },
         { key: "speedunits" },     { key: "rpmlimit" },
         // the Meltfire dial has nothing that uses these
@@ -348,6 +353,8 @@ Item{
         oiltemphigh:root.oiltemphigh
         oiltemplow: root.oiltemplow
         oiltempunits: root.oiltempunits
+        oiltempshow: root.oiltempshow
+        oilpressureshow: root.oilpressureshow
         batteryvoltage: root.batteryvoltage
         userColor: Qt.rgba(root.red/255, root.green/255, root.blue/255, 1)
         gearpos: root.gearpos
