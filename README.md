@@ -18,7 +18,7 @@ Oil temperature and oil pressure can each be hidden with their Show row in the s
 
 Settings are saved as JSON in `/opt/IC7/screen_configs/SoldatMeltfire_config.json`. An existing `Meltfire_config.txt` is imported once on first run.
 
-When setting limits, think in units of celcius. I typically make 100C for coolant, and 130 C for oil temp limits. 1 bar = ~14 psi. You'll see the limit marker rotate as you raise the temperature! :) 
+Temperature limits are in the units you display (changing Units converts them); a High of 0 turns that warning off. I typically make 100C for coolant, and 130 C for oil temp limits. 1 bar = ~14 psi. You'll see the limit marker rotate as you raise the temperature! :) 
 
 ---
 

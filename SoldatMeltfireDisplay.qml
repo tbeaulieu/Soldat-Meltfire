@@ -87,7 +87,7 @@ Item {
     property bool right_joystick: inputs & 0x40000000 || root.udp_right
 
     property int odometer: rpmtest.odometer0data/10 //Overridden by SoldatMeltfire.qml: km or miles to match speedunits, div by 10 to get 6 digits
-    property int tripmeter: rpmtest.tripmileage0data*0.62
+    property int tripmeter: rpmtest.tripmileage0data*0.621371
     property real value: 0
     property real shiftvalue: 0
 
@@ -125,7 +125,7 @@ Item {
 
     property real batteryvoltage: rpmtest.batteryvoltagedata
 
-    property int mph: (speed * 0.62)
+    property int mph: Math.round(speed * 0.621371)
 
     property int gearpos: rpmtest.geardata
 
@@ -164,6 +164,13 @@ Item {
     property int peak_water: 0
     property int peak_oil: 0
     property bool car_movement: false
+
+    // High limits are Celsius; 0 = no warning (nothing turns red and the limit marker is hidden)
+    readonly property real waterLimit: waterhigh === 0 ? 100000 : waterhigh
+    readonly property real oiltempLimit: oiltemphigh === 0 ? 100000 : oiltemphigh
+
+    // Peak view: only once the car has been driven, is stopped again, and the seatbelt lamp is on
+    readonly property bool showPeaks: seatbelt && car_movement && speed === 0
     x: 0
     y: 0
 
@@ -178,7 +185,10 @@ Item {
 
     // Peak values
     onRpmChanged: if (rpm > peak_rpm) peak_rpm = rpm
-    onSpeedChanged: if (speed > peak_speed) peak_speed = speed
+    onSpeedChanged: {
+        if (speed > peak_speed) peak_speed = speed
+        if (speed > 10 && !car_movement) car_movement = true     // was never set, so the peak view could not work
+    }
     onWatertempChanged: if (watertemp > peak_water) peak_water = watertemp
     onOiltempChanged: if (oiltemp > peak_oil) peak_oil = oiltemp
    
@@ -188,7 +198,7 @@ Item {
     }
     
     function getPeakSpeed(){
-        if (root.speedunits === 0) return root.peak_speed.toFixed(0); else return (root.peak_speed*.62).toFixed(0)
+        if (root.speedunits === 0) return root.peak_speed.toFixed(0); else return (root.peak_speed*.621371).toFixed(0)
     }
 
     function getTemp(fluid){
@@ -222,7 +232,7 @@ Item {
         }
     }
     function tempColors(fluid){
-        if((fluid === 'COOLANT' && root.watertemp >= root.waterhigh) || (fluid === 'OIL' && root.oiltemp >= root.oiltemphigh)){
+        if((fluid === 'COOLANT' && root.watertemp >= root.waterLimit) || (fluid === 'OIL' && root.oiltemp >= root.oiltempLimit)){
             return root.warning_color
         }
         else{
@@ -308,7 +318,8 @@ Item {
         visible: if(root.rpm >= root.rpmlimit) true; else false
         Timer{
             id: rpm_shift_blink
-            running: true
+            running: root.rpm >= root.rpmlimit     // was always running, 20 times a second
+            onRunningChanged: if(!running) parent.opacity = 1
             interval: 50
             repeat: true
             onTriggered: if(parent.opacity === 0){
@@ -399,7 +410,7 @@ Item {
 
     Item{
         z:5
-        visible: !root.seatbelt
+        visible: !root.showPeaks     // was hidden whenever the seatbelt lamp was on, even while driving
         Text{
             id: speed_text
             x: 446.3; y: 355;
@@ -409,14 +420,14 @@ Item {
             width: 160
             height: 54
             clip: true
-            text: if(root.speedunits === 0) root.speed.toFixed(0); else (root.speed*.62).toFixed(0)
+            text: if(root.speedunits === 0) root.speed.toFixed(0); else (root.speed*.621371).toFixed(0)
             horizontalAlignment: Text.AlignRight
         }
     }
 
     Item{
         id: peakrpm_speed
-        visible: root.seatbelt 
+        visible: root.showPeaks
         z:8
         Text{
             x: 446.3; y: 360; 
@@ -526,7 +537,7 @@ Item {
     }
     Image{
         x: 100; y: 394; z:4
-        source: if (root.brake) './img/warning_lit/brake.png'; else 'img/warning_unlit/brake.png'
+        source: if (root.brake || root.handbrake) './img/warning_lit/brake.png'; else 'img/warning_unlit/brake.png'
    
     }
     Image{
@@ -577,7 +588,7 @@ Item {
                     id: water_1_box
                     x:61;y:61;
                     height:61; width:61
-                    color: if(root.watertemp < root.waterhigh) root.primary_color; else tempWarningColor()
+                    color: if(root.watertemp < root.waterLimit) root.primary_color; else tempWarningColor()
                     transform:[
                         Rotation{
                             id: water1rotate
@@ -591,7 +602,7 @@ Item {
                     id: water_2_box
                     x:61;y:61;
                     height:61; width:61
-                    color: if(root.watertemp < root.waterhigh) root.primary_color; else tempWarningColor()
+                    color: if(root.watertemp < root.waterLimit) root.primary_color; else tempWarningColor()
                     transform:[
                         Rotation{
                             id: water2rotate
@@ -605,7 +616,7 @@ Item {
                     id: water_3_box
                     x:61;y:61;
                     height:61; width:61
-                    color: if(root.watertemp < root.waterhigh) root.primary_color; else tempWarningColor()
+                    color: if(root.watertemp < root.waterLimit) root.primary_color; else tempWarningColor()
                     transform:[
                         Rotation{
                             id: water3rotate
@@ -636,7 +647,7 @@ Item {
                         x:61;y:61
                         height: 63; width: 2
                         antialiasing: true
-                        color: if(index*(270/8) >= (root.waterhigh-40)*3.375 && (root.watertemp-40)*3.375 < index * (270/8)) tempWarningColor();else if((root.watertemp-40)*3.375 < index * (270/8)) root.primary_color; else "#000000"
+                        color: if(index*(270/8) >= (root.waterLimit-40)*3.375 && (root.watertemp-40)*3.375 < index * (270/8)) tempWarningColor();else if((root.watertemp-40)*3.375 < index * (270/8)) root.primary_color; else "#000000"
                         transform:[
                             Rotation{
                                 origin.x: 1;
@@ -649,14 +660,15 @@ Item {
                 Rectangle{
                         id: coolant_limit
                         x:61;y:61;z:2
+                        visible: root.waterhigh !== 0
                         height: 61; width: 6
-                        color: if(root.watertemp > root.waterhigh) "#000000"; else tempWarningColor()
+                        color: if(root.watertemp > root.waterLimit) "#000000"; else tempWarningColor()
                         antialiasing: true
                         transform:[
                             Rotation{
                                 origin.x: 1.5;
                                 origin.y: 0;
-                                angle: (root.waterhigh-40)*3.375
+                                angle: (root.waterLimit-40)*3.375
                             }
                         ]
                     }
@@ -669,7 +681,7 @@ Item {
                     font.pixelSize: 24
                     text: getTemp("COOLANT")
                     x:0; y:48; z: 10
-                    color: if(root.watertemp < root.waterhigh) root.primary_color; else tempWarningColor()
+                    color: if(root.watertemp < root.waterLimit) root.primary_color; else tempWarningColor()
                     width: 100
                     horizontalAlignment: Text.AlignRight
                 }
@@ -693,7 +705,7 @@ Item {
                 id: oil_1_box
                 x:61;y:61;
                 height:61; width:61
-                color: if(root.oiltemp < root.oiltemphigh) root.primary_color; else tempWarningColor()
+                color: if(root.oiltemp < root.oiltempLimit) root.primary_color; else tempWarningColor()
                 transform:[
                     Rotation{
                         id: oil1rotate
@@ -707,7 +719,7 @@ Item {
                 id: oil_2_box
                 x:61;y:61;
                 height:61; width:61
-                color: if(root.oiltemp < root.oiltemphigh) root.primary_color; else tempWarningColor()
+                color: if(root.oiltemp < root.oiltempLimit) root.primary_color; else tempWarningColor()
                 transform:[
                     Rotation{
                         id: oil2rotate
@@ -721,7 +733,7 @@ Item {
                 id: oil_3_box
                 x:61;y:61;
                 height:61; width:61
-                color: if(root.oiltemp < root.oiltemphigh) root.primary_color; else tempWarningColor()
+                color: if(root.oiltemp < root.oiltempLimit) root.primary_color; else tempWarningColor()
                 transform:[
                     Rotation{
                         id: oil3rotate
@@ -752,14 +764,15 @@ Item {
             Rectangle{
                         id: oiltemp_limit
                         x:61;y:61;z:2
+                        visible: root.oiltemphigh !== 0
                         height: 61; width: 6
-                        color: if(root.oiltemp < root.oiltemphigh) tempWarningColor(); else "#000000"
+                        color: if(root.oiltemp < root.oiltempLimit) tempWarningColor(); else "#000000"
                         antialiasing: true
                         transform:[
                             Rotation{
                                 origin.x: 1.5;
                                 origin.y: 0;
-                                angle: (root.oiltemphigh-40)*2.25
+                                angle: (root.oiltempLimit-40)*2.25
                             }
                         ]
                     }
@@ -771,7 +784,7 @@ Item {
                         x:61;y:61
                         height: 63; width: 2
                         antialiasing: true
-                        color: if(index*(270/12) >= (root.oiltemphigh-40)*2.25 && (root.oiltemp-40)*2.25 < index * (270/12)) tempWarningColor(); else if((root.oiltemp-40)*2.25 < index * (270/12)) root.primary_color; else "#000000"
+                        color: if(index*(270/12) >= (root.oiltempLimit-40)*2.25 && (root.oiltemp-40)*2.25 < index * (270/12)) tempWarningColor(); else if((root.oiltemp-40)*2.25 < index * (270/12)) root.primary_color; else "#000000"
                         transform:[
                             Rotation{
                                 origin.x: 1;
@@ -786,7 +799,7 @@ Item {
                 font.pixelSize: 24
                 text: getTemp("OIL")
                 x:0; y:48; z: 10
-                color: if(root.oiltemp < root.oiltemphigh) root.primary_color; else tempWarningColor()
+                color: if(root.oiltemp < root.oiltempLimit) root.primary_color; else tempWarningColor()
                 width: 100
                 horizontalAlignment: Text.AlignRight
             }
